@@ -1,0 +1,25 @@
+# Sree Gajananan Catering Admin Portal - Project Notes
+
+## Admin Access
+- **Default Username**: `admin`
+- **Default Password**: `admin_password_123`
+- **Authentication**: JWT-based session protection.
+- **Access Control**: Admin-only (Private system, no public registration).
+
+## Module Features
+- **Events**: Displays catering events month-wise/date-wise with delivery details and menu.
+- **Income (Varavu)**: Categorized by Mess and Mahal. Tracks total, paid, and balance amounts.
+- **Expenses (Selavu)**: Categorized by Mess and Mahal. Tracks operational costs.
+- **Staff Salary**: Monthly view with search functionality by name.
+- **Reports**: Generate and export Daily, Weekly, and Monthly reports to PDF format.
+
+## Technology Stack
+- **Frontend**: React.js (Vite), Vanilla CSS (Sleek Dark Theme), Lucide Icons.
+- **Backend**: Node.js (Express), MongoDB (Mongoose), JWT, Bcrypt.
+- **Reports**: jsPDF for high-quality multi-table PDF generation.
+
+## Setup Instructions
+1. **Database**: Configure your MongoDB Atlas connection string in `backend/.env`.
+2. **Server**: Run `npm run dev` in the `backend` directory.
+3. **Client**: Run `npm run dev` in the `frontend` directory.
+4. **Deploy**: Recommended Vercel for Frontend and Render for Backend.

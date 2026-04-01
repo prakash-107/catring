@@ -1,0 +1,36 @@
+# Sree Gajananan Catering Admin Portal - API Documentation
+
+The backend is built with Node.js, Express, and MongoDB.
+
+## Base URL: `http://localhost:5000`
+
+## Authentication
+- **POST /api/auth/login**: Login with username and password. Returns a JWT token.
+- **Header Structure**: `Authorization: Bearer <token>`
+
+## Events Management
+- **GET /api/events?month=MM&year=YYYY**: List events for a specific month.
+- **POST /api/events**: Add a new event. 
+  - Body: `{ date, deliveryTime, clientName, clientPhone, location, menuDetails }`
+- **DELETE /api/events/:id**: Remove an event.
+
+## Income (Varavu)
+- **GET /api/income?month=MM&year=YYYY&source=Mess|Mahal**: Filter income by month and category.
+- **POST /api/income**: Add income entry.
+  - Body: `{ date, clientName, totalAmount, paidAmount, source }`
+- **DELETE /api/income/:id**: Remove income record.
+
+## Expenses (Selavu)
+- **GET /api/expenses?month=MM&year=YYYY&source=Mess|Mahal**: Filter expenses by month and category.
+- **POST /api/expenses**: Add expense record.
+  - Body: `{ date, expenseName, amount, source }`
+- **DELETE /api/expenses/:id**: Remove expense record.
+
+## Staff Salary
+- **GET /api/staff?month=MM&year=YYYY&search=Name**: Search and filter salary records.
+- **POST /api/staff**: Record staff payment.
+  - Body: `{ staffName, date, amount }`
+- **DELETE /api/staff/:id**: Remove salary record.
+
+## Reports
+- **GET /api/reports?type=daily|weekly|monthly&date=YYYY-MM-DD|YYYY-MM&startDate=...&endDate=...**: Fetches aggregated data across all modules for PDF generation.

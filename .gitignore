@@ -1,0 +1,17 @@
+# Dependency folders
+backend/node_modules/
+frontend/node_modules/
+
+# Environment variables
+backend/.env
+
+# Build outputs (if Vite or other bundlers generate dist)
+frontend/dist/
+backend/dist/
+
+# Logs
+*.log
+
+# OS-specific junk
+.DS_Store
+Thumbs.db
