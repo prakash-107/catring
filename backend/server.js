@@ -32,15 +32,16 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/catering_
 // Initial Admin Seeding
 async function seedAdmin() {
     try {
-        const adminExists = await User.findOne({ username: 'admin' });
+        const adminUsername = 'sree_admin_secure';
+        const adminExists = await User.findOne({ username: adminUsername });
         if (!adminExists) {
             const admin = new User({
-                username: 'admin',
-                password: 'admin_password_123', // User should change this
+                username: adminUsername,
+                password: 'SreeGajananan@2026!StrongAdmin', // High-security password
                 name: 'Sree Gajananan Admin'
             });
             await admin.save();
-            console.log('Admin user seeded successfully');
+            console.log('Strong admin user seeded successfully');
         }
     } catch (err) {
         console.error('Error seeding admin:', err);
