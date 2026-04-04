@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Plus, Trash2, Calendar as CalendarIcon, MapPin, User, Phone, Clock, List, X } from 'lucide-react';
+import api from '../api/api';
+import { Plus, Trash2, Edit, Calendar as CalendarIcon, MapPin, User, Phone, Clock, List, X } from 'lucide-react';
 
 const Events = () => {
     const [events, setEvents] = useState([]);
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [showModal, setShowModal] = useState(false);
+    const [editId, setEditId] = useState(null);
     const [formData, setFormData] = useState({
         date: '', deliveryTime: '', menuDetails: '', clientName: '', clientPhone: '', location: ''
     });
@@ -15,7 +16,7 @@ const Events = () => {
 
     const fetchEvents = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/events?month=${month}&year=${year}`);
+            const res = await api.get(`/api/events?month=${month}&year=${year}`);
             setEvents(res.data);
         } catch (err) { console.error(err); }
     };
@@ -27,16 +28,35 @@ const Events = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/events', formData);
+            if (editId) {
+                await api.put(`/api/events/${editId}`, formData);
+            } else {
+                await api.post('/api/events', formData);
+            }
+            
             setShowModal(false);
+            setEditId(null);
             setFormData({ date: '', deliveryTime: '', menuDetails: '', clientName: '', clientPhone: '', location: '' });
             fetchEvents();
         } catch (err) { console.error(err); }
     };
 
+    const handleEdit = (event) => {
+        setEditId(event._id);
+        setFormData({
+            date: new Date(event.date).toISOString().split('T')[0],
+            deliveryTime: event.deliveryTime,
+            menuDetails: event.menuDetails,
+            clientName: event.clientName,
+            clientPhone: event.clientPhone,
+            location: event.location
+        });
+        setShowModal(true);
+    };
+
     const handleDelete = async (id) => {
         if (window.confirm('Delete this event?')) {
-            await axios.delete(`http://localhost:5000/api/events/${id}`);
+            await api.delete(`/api/events/${id}`);
             fetchEvents();
         }
     };
@@ -67,9 +87,14 @@ const Events = () => {
                     <div key={event._id} className="glass-card">
                         <div className="flex-between" style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
                            <h3 className="text-gold">{new Date(event.date).toLocaleDateString()}</h3>
-                           <button onClick={() => handleDelete(event._id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>
-                               <Trash2 size={18} />
-                           </button>
+                           <div style={{ display: 'flex', gap: '0.5rem' }}>
+                               <button onClick={() => handleEdit(event)} style={{ background: 'transparent', border: 'none', color: 'var(--text-gold)', cursor: 'pointer' }}>
+                                   <Edit size={18} />
+                               </button>
+                               <button onClick={() => handleDelete(event._id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>
+                                   <Trash2 size={18} />
+                               </button>
+                           </div>
                         </div>
                         <p style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                             <User size={16} className="text-gold" /> {event.clientName}
@@ -95,8 +120,8 @@ const Events = () => {
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div className="glass-card" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
                         <div className="flex-between mb-2">
-                           <h2>Add New Catering Event</h2>
-                           <button onClick={() => setShowModal(false)} className="btn-outline" style={{ border: 'none' }}><X size={24} /></button>
+                           <h2>{editId ? 'Edit Catering Event' : 'Add New Catering Event'}</h2>
+                           <button onClick={() => { setShowModal(false); setEditId(null); setFormData({ date: '', deliveryTime: '', menuDetails: '', clientName: '', clientPhone: '', location: '' }); }} className="btn-outline" style={{ border: 'none' }}><X size={24} /></button>
                         </div>
                         <form onSubmit={handleSubmit}>
                             <input name="date" type="date" value={formData.date} onChange={handleChange} required />

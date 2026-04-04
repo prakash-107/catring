@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Plus, Trash2, Calendar as CalendarIcon, User, Calculator, PieChart, X } from 'lucide-react';
+import api from '../api/api';
+import { Plus, Trash2, Edit, Calendar as CalendarIcon, User, Calculator, PieChart, X } from 'lucide-react';
 
 const Income = () => {
     const [income, setIncome] = useState([]);
@@ -8,6 +8,7 @@ const Income = () => {
     const [year, setYear] = useState(new Date().getFullYear());
     const [source, setSource] = useState('Mess');
     const [showModal, setShowModal] = useState(false);
+    const [editId, setEditId] = useState(null);
     const [formData, setFormData] = useState({
         date: '', clientName: '', totalAmount: '', paidAmount: '', source: 'Mess'
     });
@@ -16,7 +17,7 @@ const Income = () => {
 
     const fetchIncome = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/income?month=${month}&year=${year}&source=${source}`);
+            const res = await api.get(`/api/income?month=${month}&year=${year}&source=${source}`);
             setIncome(res.data);
         } catch (err) { console.error(err); }
     };
@@ -28,16 +29,34 @@ const Income = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/income', { ...formData, source });
+            if (editId) {
+                await api.put(`/api/income/${editId}`, { ...formData, source });
+            } else {
+                await api.post('/api/income', { ...formData, source });
+            }
+            
             setShowModal(false);
+            setEditId(null);
             setFormData({ date: '', clientName: '', totalAmount: '', paidAmount: '', source });
             fetchIncome();
         } catch (err) { console.error(err); }
     };
 
+    const handleEdit = (item) => {
+        setEditId(item._id);
+        setFormData({
+            date: new Date(item.date).toISOString().split('T')[0],
+            clientName: item.clientName,
+            totalAmount: item.totalAmount,
+            paidAmount: item.paidAmount,
+            source: item.source
+        });
+        setShowModal(true);
+    };
+
     const handleDelete = async (id) => {
         if (window.confirm('Delete this entry?')) {
-            await axios.delete(`http://localhost:5000/api/income/${id}`);
+            await api.delete(`/api/income/${id}`);
             fetchIncome();
         }
     };
@@ -115,9 +134,14 @@ const Income = () => {
                                 <td style={{ color: '#4CAF50' }}>₹{item.paidAmount}</td>
                                 <td style={{ color: '#F44336' }}>₹{item.totalAmount - item.paidAmount}</td>
                                 <td>
-                                    <button onClick={() => handleDelete(item._id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>
-                                        <Trash2 size={18} />
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button onClick={() => handleEdit(item)} style={{ background: 'transparent', border: 'none', color: 'var(--text-gold)', cursor: 'pointer' }}>
+                                            <Edit size={18} />
+                                        </button>
+                                        <button onClick={() => handleDelete(item._id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -129,8 +153,8 @@ const Income = () => {
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div className="glass-card" style={{ width: '100%', maxWidth: '500px' }}>
                         <div className="flex-between mb-2">
-                           <h2 className="mb-2">Add {source} Income</h2>
-                           <button onClick={() => setShowModal(false)} className="btn-outline" style={{ border: 'none' }}><X size={24} /></button>
+                           <h2 className="mb-2">{editId ? `Edit ${source} Income` : `Add ${source} Income`}</h2>
+                           <button onClick={() => { setShowModal(false); setEditId(null); setFormData({ date: '', clientName: '', totalAmount: '', paidAmount: '', source }); }} className="btn-outline" style={{ border: 'none' }}><X size={24} /></button>
                         </div>
                         <form onSubmit={handleSubmit}>
                             <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Date</label>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 import { Calendar, IndianRupee, CreditCard, Users, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 const Dashboard = () => {
@@ -20,10 +20,10 @@ const Dashboard = () => {
             
             try {
                 const [events, income, expenses, staff] = await Promise.all([
-                    axios.get(`http://localhost:5000/api/events?month=${month}&year=${year}`),
-                    axios.get(`http://localhost:5000/api/income?month=${month}&year=${year}`),
-                    axios.get(`http://localhost:5000/api/expenses?month=${month}&year=${year}`),
-                    axios.get(`http://localhost:5000/api/staff?month=${month}&year=${year}`)
+                    api.get(`/api/events?month=${month}&year=${year}`),
+                    api.get(`/api/income?month=${month}&year=${year}`),
+                    api.get(`/api/expenses?month=${month}&year=${year}`),
+                    api.get(`/api/staff?month=${month}&year=${year}`)
                 ]);
 
                 setStats({

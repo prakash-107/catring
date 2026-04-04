@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { FileText, Download, Calendar as CalendarIcon, Printer, CheckCircle } from 'lucide-react';
@@ -23,7 +23,7 @@ const Reports = () => {
                 params.endDate = endDate;
             }
 
-            const res = await axios.get('http://localhost:5000/api/reports', { params });
+            const res = await api.get('/api/reports', { params });
             const data = res.data;
 
             const doc = new jsPDF();

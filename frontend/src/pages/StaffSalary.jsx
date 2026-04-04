@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Plus, Trash2, Calendar as CalendarIcon, User, Search, IndianRupee, X } from 'lucide-react';
+import api from '../api/api';
+import { Plus, Trash2, Edit, Calendar as CalendarIcon, User, Search, IndianRupee, X } from 'lucide-react';
 
 const StaffSalary = () => {
     const [salaries, setSalaries] = useState([]);
@@ -8,6 +8,7 @@ const StaffSalary = () => {
     const [year, setYear] = useState(new Date().getFullYear());
     const [search, setSearch] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [editId, setEditId] = useState(null);
     const [formData, setFormData] = useState({
         staffName: '', date: '', amount: ''
     });
@@ -16,7 +17,7 @@ const StaffSalary = () => {
 
     const fetchSalaries = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/staff?month=${month}&year=${year}&search=${search}`);
+            const res = await api.get(`/api/staff?month=${month}&year=${year}&search=${search}`);
             setSalaries(res.data);
         } catch (err) { console.error(err); }
     };
@@ -28,16 +29,32 @@ const StaffSalary = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/staff', formData);
+            if (editId) {
+                await api.put(`/api/staff/${editId}`, formData);
+            } else {
+                await api.post('/api/staff', formData);
+            }
+            
             setShowModal(false);
+            setEditId(null);
             setFormData({ staffName: '', date: '', amount: '' });
             fetchSalaries();
         } catch (err) { console.error(err); }
     };
 
+    const handleEdit = (item) => {
+        setEditId(item._id);
+        setFormData({
+            staffName: item.staffName,
+            date: new Date(item.date).toISOString().split('T')[0],
+            amount: item.amount
+        });
+        setShowModal(true);
+    };
+
     const handleDelete = async (id) => {
         if (window.confirm('Delete this salary record?')) {
-            await axios.delete(`http://localhost:5000/api/staff/${id}`);
+            await api.delete(`/api/staff/${id}`);
             fetchSalaries();
         }
     };
@@ -97,9 +114,14 @@ const StaffSalary = () => {
                                 <td style={{ color: 'var(--primary)', fontWeight: '500' }}>{item.staffName}</td>
                                 <td style={{ color: '#4CAF50', fontWeight: 'bold' }}>₹{item.amount}</td>
                                 <td>
-                                    <button onClick={() => handleDelete(item._id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>
-                                        <Trash2 size={18} />
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button onClick={() => handleEdit(item)} style={{ background: 'transparent', border: 'none', color: 'var(--text-gold)', cursor: 'pointer' }}>
+                                            <Edit size={18} />
+                                        </button>
+                                        <button onClick={() => handleDelete(item._id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -111,8 +133,8 @@ const StaffSalary = () => {
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div className="glass-card" style={{ width: '100%', maxWidth: '500px' }}>
                         <div className="flex-between mb-2">
-                           <h2 className="mb-2">Record Staff Salary</h2>
-                           <button onClick={() => setShowModal(false)} className="btn-outline" style={{ border: 'none' }}><X size={24} /></button>
+                           <h2 className="mb-2">{editId ? 'Edit Staff Salary' : 'Record Staff Salary'}</h2>
+                           <button onClick={() => { setShowModal(false); setEditId(null); setFormData({ staffName: '', date: '', amount: '' }); }} className="btn-outline" style={{ border: 'none' }}><X size={24} /></button>
                         </div>
                         <form onSubmit={handleSubmit}>
                             <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Staff Name</label>

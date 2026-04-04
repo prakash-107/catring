@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Plus, Trash2, Calendar as CalendarIcon, CreditCard, Tag, X } from 'lucide-react';
+import api from '../api/api';
+import { Plus, Trash2, Edit, Calendar as CalendarIcon, CreditCard, Tag, X } from 'lucide-react';
 
 const Expenses = () => {
     const [expenses, setExpenses] = useState([]);
@@ -8,6 +8,7 @@ const Expenses = () => {
     const [year, setYear] = useState(new Date().getFullYear());
     const [source, setSource] = useState('Mess');
     const [showModal, setShowModal] = useState(false);
+    const [editId, setEditId] = useState(null);
     const [formData, setFormData] = useState({
         date: '', expenseName: '', amount: '', source: 'Mess'
     });
@@ -16,7 +17,7 @@ const Expenses = () => {
 
     const fetchExpenses = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/expenses?month=${month}&year=${year}&source=${source}`);
+            const res = await api.get(`/api/expenses?month=${month}&year=${year}&source=${source}`);
             setExpenses(res.data);
         } catch (err) { console.error(err); }
     };
@@ -28,16 +29,33 @@ const Expenses = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/expenses', { ...formData, source });
+            if (editId) {
+                await api.put(`/api/expenses/${editId}`, { ...formData, source });
+            } else {
+                await api.post('/api/expenses', { ...formData, source });
+            }
+            
             setShowModal(false);
+            setEditId(null);
             setFormData({ date: '', expenseName: '', amount: '', source });
             fetchExpenses();
         } catch (err) { console.error(err); }
     };
 
+    const handleEdit = (item) => {
+        setEditId(item._id);
+        setFormData({
+            date: new Date(item.date).toISOString().split('T')[0],
+            expenseName: item.expenseName,
+            amount: item.amount,
+            source: item.source
+        });
+        setShowModal(true);
+    };
+
     const handleDelete = async (id) => {
         if (window.confirm('Delete this expense?')) {
-            await axios.delete(`http://localhost:5000/api/expenses/${id}`);
+            await api.delete(`/api/expenses/${id}`);
             fetchExpenses();
         }
     };
@@ -99,9 +117,14 @@ const Expenses = () => {
                                 <td style={{ color: 'var(--primary)', fontWeight: '500' }}>{item.expenseName}</td>
                                 <td style={{ color: '#F44336', fontWeight: 'bold' }}>₹{item.amount}</td>
                                 <td>
-                                    <button onClick={() => handleDelete(item._id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>
-                                        <Trash2 size={18} />
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button onClick={() => handleEdit(item)} style={{ background: 'transparent', border: 'none', color: 'var(--text-gold)', cursor: 'pointer' }}>
+                                            <Edit size={18} />
+                                        </button>
+                                        <button onClick={() => handleDelete(item._id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer' }}>
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -113,8 +136,8 @@ const Expenses = () => {
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div className="glass-card" style={{ width: '100%', maxWidth: '500px' }}>
                         <div className="flex-between mb-2">
-                           <h2 className="mb-2">Add {source} Expense</h2>
-                           <button onClick={() => setShowModal(false)} className="btn-outline" style={{ border: 'none' }}><X size={24} /></button>
+                           <h2 className="mb-2">{editId ? `Edit ${source} Expense` : `Add ${source} Expense`}</h2>
+                           <button onClick={() => { setShowModal(false); setEditId(null); setFormData({ date: '', expenseName: '', amount: '', source }); }} className="btn-outline" style={{ border: 'none' }}><X size={24} /></button>
                         </div>
                         <form onSubmit={handleSubmit}>
                             <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Date</label>

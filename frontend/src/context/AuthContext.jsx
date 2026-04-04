@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 
 const AuthContext = createContext();
 
@@ -12,17 +12,15 @@ export const AuthProvider = ({ children }) => {
         if (token) {
             const userData = JSON.parse(localStorage.getItem('user'));
             setUser(userData);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         }
         setLoading(false);
     }, []);
 
     const login = async (username, password) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', { username, password });
+            const res = await api.post('/api/auth/login', { username, password });
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
-            axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
             setUser(res.data.user);
             return { success: true };
         } catch (err) {
@@ -33,7 +31,6 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        delete axios.defaults.headers.common['Authorization'];
         setUser(null);
     };
 

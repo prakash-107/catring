@@ -101,6 +101,15 @@ app.post('/api/events', authenticate, async (req, res) => {
     }
 });
 
+app.put('/api/events/:id', authenticate, async (req, res) => {
+    try {
+        const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedEvent);
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
+});
+
 app.delete('/api/events/:id', authenticate, async (req, res) => {
     await Event.findByIdAndDelete(req.params.id);
     res.json({ message: 'Event deleted' });
@@ -124,6 +133,15 @@ app.post('/api/income', authenticate, async (req, res) => {
     const newIncome = new Income(req.body);
     await newIncome.save();
     res.json(newIncome);
+});
+
+app.put('/api/income/:id', authenticate, async (req, res) => {
+    try {
+        const updatedIncome = await Income.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedIncome);
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
 });
 
 app.delete('/api/income/:id', authenticate, async (req, res) => {
@@ -151,6 +169,15 @@ app.post('/api/expenses', authenticate, async (req, res) => {
     res.json(newExpense);
 });
 
+app.put('/api/expenses/:id', authenticate, async (req, res) => {
+    try {
+        const updatedExpense = await Expense.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedExpense);
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
+});
+
 app.delete('/api/expenses/:id', authenticate, async (req, res) => {
     await Expense.findByIdAndDelete(req.params.id);
     res.json({ message: 'Expense entry deleted' });
@@ -176,6 +203,15 @@ app.post('/api/staff', authenticate, async (req, res) => {
     const newSalary = new StaffSalary(req.body);
     await newSalary.save();
     res.json(newSalary);
+});
+
+app.put('/api/staff/:id', authenticate, async (req, res) => {
+    try {
+        const updatedSalary = await StaffSalary.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedSalary);
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
 });
 
 app.delete('/api/staff/:id', authenticate, async (req, res) => {
