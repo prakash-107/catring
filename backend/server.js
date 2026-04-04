@@ -32,12 +32,14 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/catering_
 // Initial Admin Seeding
 async function seedAdmin() {
     try {
-        const adminUsername = 'sree_admin_secure';
+        const adminUsername = process.env.ADMIN_USER || 'sree_admin_secure';
+        const adminPassword = process.env.ADMIN_PASS || 'SreeGajananan@2026!StrongAdmin';
+        
         const adminExists = await User.findOne({ username: adminUsername });
         if (!adminExists) {
             const admin = new User({
                 username: adminUsername,
-                password: 'SreeGajananan@2026!StrongAdmin', // High-security password
+                password: adminPassword,
                 name: 'Sree Gajananan Admin'
             });
             await admin.save();
